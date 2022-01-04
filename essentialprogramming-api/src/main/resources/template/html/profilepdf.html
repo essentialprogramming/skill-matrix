@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>PDF for User Profile</title>
+    <style>
+
+        @page {
+            @bottom-left {
+                content: element(footer);
+                vertical-align: top;
+                padding-top: 0;
+            }
+            @top-right {
+                content: element(header);
+                vertical-align: bottom;
+                padding-bottom: 0;
+            }
+            margin: 20px 0;
+            size: A4 portrait;
+        }
+
+        .leftRectangle {
+            border:1px solid #8b0000;
+            background-color: #8b0000;
+            height: 29.6cm;
+            width: 27.5%;
+            position: fixed;
+            left: 4%;
+            top: 0;
+            z-index: -1;
+        }
+
+        .topRectangle {
+            border:1px solid #D8D8D8;
+            background-color: #D8D8D8;
+            height: 5cm;
+            width: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: -2;
+        }
+
+        .name {
+            position: relative;
+            top: 60px;
+            left: 280px;
+            font-size: 30pt;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900; /* black */
+            color: #8b0000;
+        }
+
+        .name p {
+            display: inline;
+        }
+
+        .role {
+            position: relative;
+            top: 65px;
+            left: 280px;
+            font-size: 14pt;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900; /* black */
+            color: #8b0000;
+        }
+
+        .education {
+            position: absolute;
+            top: 275px;
+            left: 45px;
+            font-size: 12pt;
+            font-family: "Open Sans", sans-serif;
+            color: #ffffff;
+            width: 195px;
+        }
+
+        .profilePicture {
+            display: inline-block;
+            position: absolute;
+            left: 54px;
+            top: 10px;
+        }
+
+        .profilePicture img {
+            object-fit: cover;
+            height: 175px;
+            width: 175px;
+        }
+
+        .avgLogo {
+            display: inline-block;
+            position: fixed;
+            left: 36px;
+            top: 27cm;
+        }
+
+        .avgLogo img {
+            object-fit: cover;
+            height: 50px;
+            width: 210px;
+        }
+
+        .summary {
+            position: absolute;
+            top: 215px;
+            left: 280px;
+            font-size: 12pt;
+            font-family: "Open Sans", sans-serif;
+            color: #8b0000;
+            width: 500px;
+        }
+
+        .projects {
+            position: relative;
+            top: 200px;
+            left: 270px;
+            font-size: 12pt;
+            font-family: "Open Sans", sans-serif;
+            color: #8b0000;
+            width: 500px;
+        }
+
+        .skills {
+            position: relative;
+            top: 200px;
+            left: 270px;
+            font-size: 12pt;
+            font-family: "Open Sans", sans-serif;
+            color: #8b0000;
+            width: 500px;
+        }
+
+        .languages {
+            page-break-inside: avoid;
+            position: relative;
+            top: 200px;
+            left: 270px;
+            font-size: 12pt;
+            font-family: "Open Sans", sans-serif;
+            color: #8b0000;
+            width: 500px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div>
+    <div class="leftRectangle"></div>
+    <div class="topRectangle"></div>
+
+    <div class="name">
+        <p th:text="${profile.firstName}"></p>
+        <p th:text="${profile.lastName}"></p>
+    </div>
+
+    <div class="role">
+        <p th:text="${profile.role}"></p>
+    </div>
+
+    <div class="education">
+        <p style="font-weight: bold">EDUCATION</p>
+        <p th:text="${profile.education}" style="font-size: 10pt"></p>
+    </div>
+
+    <div class="profilePicture">
+        <img th:src="@{'data:image/png;base64,' +${profile.profilePicture}}" />
+    </div>
+
+    <div class="avgLogo">
+        <img th:src="@{'data:image/png;base64,' +#{base64.avglogo}}" />
+    </div>
+
+    <div class="summary">
+        <p style="font-weight: bold">SUMMARY</p>
+        <p th:text="${profile.summary}" style="font-size: 11pt; color: #707070"></p>
+    </div>
+
+    <div class="skills" th:if="${!profile.skills.isEmpty()}">
+        <p style="font-weight: bold">TECHNICAL SKILLS</p>
+        <div th:each="skillsMap : ${skills}">
+            <p th:text="${skillsMap.key}" style="font-weight: bold; font-size: 12pt; color: #707070; margin-bottom: 2px;"></p>
+            <div th:each="skill: ${skillsMap.value}" style="display: inline">
+                <p th:text="${skill}" style="color: #707070; font-size: 11pt; display: inline;"></p>
+                <p style="color: #707070; display: inline;" th:if="${skillStat.index != skillsMap.value.size() - 1}">, </p>
+            </div>
+        </div>
+        <div th:if="${!skillsInterestedIn.isEmpty()}">
+            <p style="font-weight: bold; font-size: 12pt; color: #707070; margin-bottom: 2px;">Interested in</p>
+            <div th:each="skill: ${skillsInterestedIn}" style="display: inline">
+                <p th:text="${skill}" style="color: #707070; font-size: 11pt; display: inline;"></p>
+                <p style="color: #707070; display: inline;" th:if="${skillStat.index != skillsInterestedIn.size() - 1}">, </p>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="projects" th:if="${!profile.projects.isEmpty()}">
+            <p style="font-weight: bold; margin-top: 20px;">PROJECTS</p>
+            <div th:each="project: ${profile.projects}" style="page-break-inside: avoid;">
+                <div th:text="${project.title}" style="color: #707070; font-weight: bold; font-size: 14pt; display: inline"></div>
+                <div style="display: inline"> - </div>
+                <div th:text="${project.period}" style="color: #707070; display: inline"></div>
+                <div th:text="${project.shortDescription}" style="color: #707070;"></div>
+                <div style="color: #707070; font-weight: bold">Relevant responsibilities:</div>
+                <div th:text="${project.responsibilities}" style="color: #707070;"></div>
+                <br />
+            </div>
+        </div>
+
+        <div class="languages" th:if="${!profile.spokenLanguages.isEmpty()}">
+            <p style="font-weight: bold">SPOKEN LANGUAGES</p>
+            <div th:each="language: ${profile.spokenLanguages}" style="display: inline">
+                <p th:text="${language}" style="color: #707070; font-size: 12pt; display: inline;"></p>
+                <p style="color: #707070; display: inline;" th:if="${languageStat.index != profile.spokenLanguages.size() - 1}">, </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

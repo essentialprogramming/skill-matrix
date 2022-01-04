@@ -1,0 +1,37 @@
+<div th:fragment="new_user" xmlns:th="http://www.thymeleaf.org">
+    <p><p2 th:text="#{new_user.hello}"></p2>
+        <p2 th:text="${fullName}"></p2>
+    </p>
+    <br/>
+
+    <!--/*@thymesVar id="fullName" type="java.lang.String"*/-->
+    <strong th:text="#{new_user.newadmin}"></strong>
+    <br/>
+    <span th:text="#{new_user.setpassword}"></span>
+    <br/>
+    <div style="margin-left:35px;">
+        <br/>
+        <span th:text="#{new_user.email}"></span>
+        <span th:text="${userEmail}"></span>
+        <br/>
+        <span th:text="#{new_user.password}"></span>
+        <br/>
+    </div>
+    <br/>
+    <br/>
+    <div style="
+    text-align: center;">
+
+        <!--/*@thymesVar id="confirmationLink" type="java.lang.String"*/-->
+        <a href="#" th:href="${loginLink}" th:text="#{new_user.loginlink}" target="_other" rel="nofollow"
+           style="
+    background: #ef8860;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px;
+    display: inline-block;
+    border-radius: 5px;
+    "></a>
+    </div>
+
+</div>
