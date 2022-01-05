@@ -2,6 +2,8 @@ package com.api.repository;
 
 import com.api.entities.CategorySkillRelation;
 import com.api.entities.Profile;
+import com.api.entities.Skill;
+import com.api.entities.SkillCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,4 +27,13 @@ public interface CategorySkillRelationRepository extends JpaRepository<CategoryS
 
       @Query("FROM CategorySkillRelation csr WHERE csr.skill.skillKey = :skillKey")
       Optional<CategorySkillRelation> findBySkillKey(@Param("skillKey") String skillKey);
+
+      @Modifying
+      @Query("UPDATE  CategorySkillRelation csr SET csr.category = :newCategory " +
+              "WHERE csr.category = :oldCategory AND csr.skill = :skill")
+      void updateCategory(@Param("oldCategory") SkillCategory oldSkillCategory, @Param("newCategory") SkillCategory newSkillCategory, @Param("skill") Skill skill);
+
+      @Query("FROM CategorySkillRelation csr WHERE csr.skill.skillKey = :skillKey AND csr.category.categoryKey = :categoryKey")
+      Optional<CategorySkillRelation> findBySkillKeyAndCategoryKey(@Param("skillKey") String skillKey, @Param("categoryKey") String categoryKey);
+
 }

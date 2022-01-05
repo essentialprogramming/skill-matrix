@@ -5,6 +5,7 @@ import com.api.mapper.CategorySkillRelationMapper;
 import com.api.mapper.ProfileSkillMapper;
 import com.api.model.ProfileSkillSearchCriteria;
 
+import com.api.model.EditSkillInput;
 import com.api.model.SkillSearchCriteria;
 import com.api.output.CategorySkillRelationJSON;
 import com.api.output.ProfileSkillJSON;
@@ -163,34 +164,32 @@ public class SkillService {
 
 
     @Transactional
-    public JsonResponse editSkillName(String skillName, String newSkillName) {
-        if (!skillRepository.existsByNameIgnoreCase(skillName))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "The skill you want to edit not found!");
+    public JsonResponse editSkill(EditSkillInput skillInput) {
 
-        skillRepository.updateName(skillName, newSkillName);
+        Skill skillToEdit = skillRepository.findBySkillKey(skillInput.getSkillToEditKey())
+                .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, "Skill not found!"));
 
-        return new JsonResponse()
-                .with("status", "no content")
-                .with("message", "Skill name successfully edited.")
-                .done();
-    }
+        if (skillInput.getNewSkillName() != null) {
+            skillRepository.updateName(skillInput.getSkillToEditKey(), skillInput.getNewSkillName());
+        }
 
-    @Transactional
-    public JsonResponse editCategoryOfASkill(String skillName, String newCategoryKey) {
-        if (!skillRepository.existsByNameIgnoreCase(skillName))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "The skill you want to edit not found!");
+        if (skillInput.getCategoryToEditKey()!= null && skillInput.getCategoryToAssociateKey() != null) {
 
-        if (!skillCategoryRepository.findByCategoryKey(newCategoryKey).isPresent())
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Skill category not found!");
-        else {
-            categorySkillRelationRepository.deleteSkills(skillName);
-            skillRepository.deleteSkills(skillName);
-            addNewSkill(skillName, newCategoryKey);
+            SkillCategory skillCategoryToEdit = skillCategoryRepository.findByCategoryKey(skillInput.getCategoryToEditKey())
+                    .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, "Skill category to edit does not exist!"));
+
+            if (categorySkillRelationRepository.findBySkillKeyAndCategoryKey(skillInput.getSkillToEditKey(), skillInput.getCategoryToAssociateKey()).isPresent()) {
+                throw new HttpClientErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Category already associated!");
+            }
+            SkillCategory skillCategoryToAssociate = skillCategoryRepository.findByCategoryKey(skillInput.getCategoryToAssociateKey())
+                    .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, "Skill category to associate does not exist!"));
+
+            categorySkillRelationRepository.updateCategory(skillCategoryToEdit, skillCategoryToAssociate, skillToEdit);
         }
 
         return new JsonResponse()
                 .with("status", "no content")
-                .with("message", "The category of skill " + skillName + " successfully edited.")
+                .with("message", "Skill successfully edited.")
                 .done();
     }
 

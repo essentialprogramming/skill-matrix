@@ -19,8 +19,8 @@ public interface SkillRepository extends JpaRepository<Skill, Integer> {
     Boolean existsByNameIgnoreCase(String name);
 
     @Modifying
-    @Query("UPDATE Skill s SET s.name = :newName WHERE s.name = :oldName")
-    void updateName(@Param("oldName") String oldName, @Param("newName") String newName);
+    @Query("UPDATE Skill s SET s.name = :newName WHERE s.skillKey = :skillKey")
+    void updateName(@Param("skillKey") String skillKey, @Param("newName") String newName);
 
     @Modifying
     @Query("DELETE FROM Skill s where s.name = :name")

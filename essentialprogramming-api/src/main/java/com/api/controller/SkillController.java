@@ -2,6 +2,7 @@ package com.api.controller;
 
 import com.api.config.Anonymous;
 import com.api.model.ProfileSkillSearchCriteria;
+import com.api.model.EditSkillInput;
 import com.api.model.SkillSearchCriteria;
 import com.api.output.CategorySkillRelationJSON;
 import com.api.output.ProfileSkillJSON;
@@ -206,70 +207,30 @@ public class SkillController {
 
 
     @PUT
-    @Path("/edit/skill/name")
+    @Path("/edit")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Edit the name of a skill",
+    @Operation(summary = "Edit skill",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Edit the name of an already existing skill" +
-                            " and returns a custom JSON response if it was successful",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(example = "{\"status\": \"no content\", " +
-                                            "\"message\": \"Skill successfully edited!\"}"))),
+                    @ApiResponse(responseCode = "204", description = "The operation succeeded and no content is returned"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized."),
                     @ApiResponse(responseCode = "422", description = "Business error."),
                     @ApiResponse(responseCode = "500", description = "Internal server error.")
             })
     @RolesAllowed({"ADMIN"})
     @Anonymous
-    public void editSkill(@Valid @NotNull(message = "Skill name that need to be edited must be provided!")
-                          @QueryParam("Skill name") String skillName,
-                          @Valid @NotNull(message = "The new skill name must be provided!")
-                          @QueryParam("New skill name") String newSkillName,
-                          @Suspended AsyncResponse asyncResponse) {
+    public void editSkill(@Valid EditSkillInput skillInput, @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();
-        Computation.computeAsync(() -> editSkillName(skillName, newSkillName), executorService)
+        Computation.computeAsync(() -> editSkill(skillInput), executorService)
                 .thenApplyAsync(json -> asyncResponse.resume(Response.status(204).build()), executorService)
                 .exceptionally(error -> asyncResponse.resume(ExceptionHandler.handleException((CompletionException) error)));
     }
 
-    private JsonResponse editSkillName(String skillName, String newSkillName) {
-        return skillService.editSkillName(skillName, newSkillName);
+    private JsonResponse editSkill(EditSkillInput skillInput) {
+        return skillService.editSkill(skillInput);
     }
 
-
-
-    @PUT
-    @Path("/edit/skill/category")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Edit the category of a skill",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Edit the category of an already existing skill " +
-                            "with a category that already exist" +
-                            " and returns a custom JSON response if it was successful",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(example = "{\"status\": \"no content\", " +
-                                            "\"message\": \"Skill successfully edited!\"}"))),
-                    @ApiResponse(responseCode = "401", description = "Unauthorized."),
-                    @ApiResponse(responseCode = "422", description = "Business error."),
-                    @ApiResponse(responseCode = "500", description = "Internal server error.")})
-    @RolesAllowed({"ADMIN"})
-    @Anonymous
-    public void editCategoryOfASkill(@Valid @NotNull(message = "Skill name that need to be edited must be provided!")
-                                     @QueryParam("Skill name") String skillName,
-                                     @Valid @NotNull(message = "The category key must be provided!")
-                                     @QueryParam("The new category key") String newCategoryKey,
-                                     @Suspended AsyncResponse asyncResponse) {
-
-        ExecutorService executorService = ExecutorsProvider.getExecutorService();
-        Computation.computeAsync(() -> editCategoryOfASkill(skillName, newCategoryKey), executorService)
-                .thenApplyAsync(json -> asyncResponse.resume(Response.status(204).build()), executorService)
-                .exceptionally(error -> asyncResponse.resume(ExceptionHandler.handleException((CompletionException) error)));
-    }
-
-    private JsonResponse editCategoryOfASkill(String skillName, String newCategoryKey) {
-        return skillService.editCategoryOfASkill(skillName, newCategoryKey);
-    }
 
     @POST
     @Path("search/skills")
