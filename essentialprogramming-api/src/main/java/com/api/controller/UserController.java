@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
@@ -34,7 +35,7 @@ import java.security.GeneralSecurityException;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 @Tag(description = "User API", name = "User Services")
-@Path("/security/")
+@Path("/security")
 public class UserController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
@@ -51,7 +52,7 @@ public class UserController {
 
 
     @POST
-    @Path("admin/create")
+    @Path("/admin")
     @Consumes("application/json")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create admin account",
@@ -63,7 +64,7 @@ public class UserController {
             })
     @RolesAllowed("ADMIN")
     @Anonymous
-    public void createAdmin(UserInput userInput, @Suspended AsyncResponse asyncResponse) {
+    public void createAdmin(@Valid UserInput userInput, @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();
         Computation.computeAsync(() -> createUser(userInput, language, PlatformType.ADMIN), executorService)
@@ -74,7 +75,7 @@ public class UserController {
 
 
     @POST
-    @Path("employee/create")
+    @Path("/employee")
     @Consumes("application/json")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create employee account",
@@ -86,7 +87,7 @@ public class UserController {
             })
     @RolesAllowed("ADMIN")
     @Anonymous
-    public void createUser(UserInput userInput, @Suspended AsyncResponse asyncResponse) {
+    public void createUser(@Valid UserInput userInput, @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();
         Computation.computeAsync(() -> createUser(userInput, language, PlatformType.EMPLOYEE), executorService)

@@ -1,7 +1,5 @@
 package com.util;
 
-import com.api.entities.Skill;
-import com.api.entities.User;
 import com.api.model.*;
 
 import java.security.SecureRandom;
@@ -13,8 +11,8 @@ public class TestEntityGenerator {
 
     public static UserInput generateUserInput() {
         return UserInput.builder()
-                .firstName("firstName" + secureRandom.nextInt())
-                .lastName("lastName" + secureRandom.nextInt())
+                .firstName("GeneratedFirstName")
+                .lastName("GeneratedLastName")
                 .email("email" + secureRandom.nextInt() + "@mail.com")
                 .phone("0789456123")
                 .build();
