@@ -17,8 +17,7 @@ public interface ProfileSkillRepository extends JpaRepository<ProfileSkill, Inte
     @Query("FROM ProfileSkill pS WHERE pS.profile.email = ?1")
     List<ProfileSkill> findAllSkillsForProfile(String userEmail);
 
-    @Query("SELECT pS.skill FROM ProfileSkill pS WHERE pS.skill = ?1")
-    Optional<Skill> findSkillByProfile(Skill skill);
+    boolean existsByProfileAndSkill(Profile profile, Skill skill);
 
     @Query("SELECT pS.skillLevel FROM ProfileSkill pS WHERE pS.skill = ?1 AND pS.profile = ?2")
     Optional<String> findLevelBySkillAndProfile(Skill skill, Profile profile);

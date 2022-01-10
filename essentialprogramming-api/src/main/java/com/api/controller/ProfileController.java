@@ -40,6 +40,8 @@ import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
+
+
 @Tag(description = "Profile API", name = "Profile Services")
 @Path("/profile")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -139,7 +141,7 @@ public class ProfileController {
     }
 
     @POST
-    @Path("/add/project")
+    @Path("/project")
     @Consumes("application/json")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Add project to profile",
@@ -174,7 +176,7 @@ public class ProfileController {
     }
 
     @POST
-    @Path("/add/project/skill")
+    @Path("/project/skill")
     @Consumes("application/json")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Add skill to project",
@@ -191,10 +193,10 @@ public class ProfileController {
             })
     @Anonymous
     public void addSkillToProject(@HeaderParam("Authorization") String authorization,
-                                  @Valid @NotNull(message = "Project key must be provided!")
-                                  @QueryParam("Project Key") String projectKey,
-                                  @Valid @NotNull(message = "Skill key must be provided!")
-                                  @QueryParam("Skill Key") String skillKey,
+                                  @NotNull(message = "Project key must be provided!")
+                                  @QueryParam("project-key") String projectKey,
+                                  @NotNull(message = "Skill key must be provided!")
+                                  @QueryParam("skill-key") String skillKey,
                                   @Suspended AsyncResponse asyncResponse) {
 
         final String bearer = AuthUtils.extractBearerToken(authorization);
@@ -207,11 +209,11 @@ public class ProfileController {
     }
 
     private Serializable addSkillToProject(String userEmail, String projectKey, String skillKey) {
-        return profileService.addSkillToProject(projectKey, skillKey);
+        return profileService.addSkillToProject(userEmail, projectKey, skillKey);
     }
 
     @POST
-    @Path("/add/skill")
+    @Path("/skill")
     @Consumes("application/json")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Add skill to profile",
@@ -228,10 +230,10 @@ public class ProfileController {
             })
     @Anonymous
     public void addSkillToProfile(@HeaderParam("Authorization") String authorization,
-                                  @Valid @NotNull(message = "Skill key must be provided!")
-                                  @QueryParam("skillKey") String skillKey,
-                                  @Valid @NotNull(message = "Skill level must be provided!")
-                                  @QueryParam("skillLevel") String skillLevel,
+                                  @NotNull(message = "Skill key must be provided!")
+                                  @QueryParam("skill-key") String skillKey,
+                                  @NotNull(message = "Skill level must be provided!")
+                                  @QueryParam("skill-level") String skillLevel,
                                   @Suspended AsyncResponse asyncResponse) {
 
         final String bearer = AuthUtils.extractBearerToken(authorization);
@@ -304,7 +306,7 @@ public class ProfileController {
     }
 
     @PUT
-    @Path("/update")
+    @Path("/project")
     @Consumes("application/json")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update project",
@@ -318,8 +320,8 @@ public class ProfileController {
             })
     @Anonymous
     public void updateProject(@HeaderParam("Authorization") String authorization,
-                              @Valid @NotNull(message = "Project key must be provided!")
-                              @QueryParam("Project Key") String projectKey,
+                              @NotNull(message = "Project key must be provided!")
+                              @QueryParam("project-key") String projectKey,
                               ProjectInput projectInput,
                               @Suspended AsyncResponse asyncResponse) {
 

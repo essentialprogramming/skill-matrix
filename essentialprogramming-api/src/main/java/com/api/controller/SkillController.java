@@ -33,6 +33,8 @@ import javax.ws.rs.core.Response;
 import java.io.Serializable;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
+
+
 @Tag(description = "Skill API", name = "Skill Services")
 @Path("/skill")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -44,7 +46,7 @@ public class SkillController {
     private Language language;
 
     @POST
-    @Path("/add-category")
+    @Path("/category")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Add new skill category",
             responses = {
@@ -61,7 +63,7 @@ public class SkillController {
             })
     @RolesAllowed({"ADMIN"})
     @Anonymous
-    public void addNewSkillCategory(@Valid @NotNull(message = "Skill category name must be provided!")
+    public void addNewSkillCategory(@NotNull(message = "Skill category name must be provided!")
                                     @QueryParam("name") String name,
                                     @Suspended AsyncResponse asyncResponse) {
 
@@ -90,10 +92,10 @@ public class SkillController {
                     @ApiResponse(responseCode = "422", description = "Business error."),
                     @ApiResponse(responseCode = "500", description = "Internal server error.")
             })
-    public void suggestSkill(@Valid @NotNull(message = "Skill name must be provided!")
-                             @QueryParam("skillName") String skillName,
-                             @Valid @NotNull(message = "Skill category name must be provided!")
-                             @QueryParam("categoryKey") String categoryKey,
+    public void suggestSkill(@NotNull(message = "Skill name must be provided!")
+                             @QueryParam("skill-name") String skillName,
+                             @NotNull(message = "Skill category name must be provided!")
+                             @QueryParam("category-key") String categoryKey,
                              @HeaderParam("Authorization") String authorization,
                              @Suspended AsyncResponse asyncResponse) {
 
@@ -111,7 +113,6 @@ public class SkillController {
     }
 
     @POST
-    @Path("/add")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Add new skill",
             responses = {
@@ -126,10 +127,10 @@ public class SkillController {
             })
     @RolesAllowed({"ADMIN"})
     @Anonymous
-    public void addNewSkill(@Valid @NotNull(message = "Skill name must be provided!")
-                            @QueryParam("skillName") String skillName,
-                            @Valid @NotNull(message = "Category key must be provided!")
-                            @QueryParam("skillCategoryKey") String skillCategoryKey,
+    public void addNewSkill(@NotNull(message = "Skill name must be provided!")
+                            @QueryParam("skill-name") String skillName,
+                            @NotNull(message = "Category key must be provided!")
+                            @QueryParam("skill-category-key") String skillCategoryKey,
                             @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();
@@ -159,8 +160,8 @@ public class SkillController {
                     @ApiResponse(responseCode = "500", description = "Internal server error.")})
     @RolesAllowed("ADMIN")
     @Anonymous
-    public void acceptSuggestSkill(@Valid @NotNull(message = "Suggested skill key must be provided!")
-                                   @QueryParam("suggestedSkillKey") String suggestedSkillKey,
+    public void acceptSuggestSkill(@NotNull(message = "Suggested skill key must be provided!")
+                                   @QueryParam("suggested-skill-key") String suggestedSkillKey,
                                    @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();
@@ -190,8 +191,8 @@ public class SkillController {
                     @ApiResponse(responseCode = "500", description = "Internal server error.")})
     @RolesAllowed("ADMIN")
     @Anonymous
-    public void denySuggestSkill(@Valid @NotNull(message = "Suggested skill key must be provided!")
-                                 @QueryParam("suggestedSkillKey") String suggestedSkillKey,
+    public void denySuggestSkill(@NotNull(message = "Suggested skill key must be provided!")
+                                 @QueryParam("suggested-skill-key") String suggestedSkillKey,
                                  @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();
@@ -206,7 +207,7 @@ public class SkillController {
 
 
     @PUT
-    @Path("/edit/skill/name")
+    @Path("/name")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Edit the name of a skill",
             responses = {
@@ -222,9 +223,9 @@ public class SkillController {
     @RolesAllowed({"ADMIN"})
     @Anonymous
     public void editSkill(@Valid @NotNull(message = "Skill name that need to be edited must be provided!")
-                          @QueryParam("Skill name") String skillName,
+                          @QueryParam("skill-name") String skillName,
                           @Valid @NotNull(message = "The new skill name must be provided!")
-                          @QueryParam("New skill name") String newSkillName,
+                          @QueryParam("new-skill-name") String newSkillName,
                           @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();
@@ -240,7 +241,7 @@ public class SkillController {
 
 
     @PUT
-    @Path("/edit/skill/category")
+    @Path("/category")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Edit the category of a skill",
             responses = {
@@ -256,9 +257,9 @@ public class SkillController {
     @RolesAllowed({"ADMIN"})
     @Anonymous
     public void editCategoryOfASkill(@Valid @NotNull(message = "Skill name that need to be edited must be provided!")
-                                     @QueryParam("Skill name") String skillName,
+                                     @QueryParam("skill-name") String skillName,
                                      @Valid @NotNull(message = "The category key must be provided!")
-                                     @QueryParam("The new category key") String newCategoryKey,
+                                     @QueryParam("new-category-key") String newCategoryKey,
                                      @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();
@@ -272,7 +273,7 @@ public class SkillController {
     }
 
     @POST
-    @Path("search/skills")
+    @Path("search")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/json")
     @Operation(summary = "Search skills",
@@ -299,7 +300,7 @@ public class SkillController {
     }
 
     @POST
-    @Path("search/profile/skills")
+    @Path("/profile/search")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes("application/json")
     @Operation(summary = "Search skills associated to a profile",

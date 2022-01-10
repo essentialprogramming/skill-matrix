@@ -182,16 +182,21 @@ public class ProfileService {
     }
 
     @Transactional
-    public JsonResponse addSkillToProject(String projectKey, String skillKey) {
-        final Project project = projectRepository.findByProjectKey(projectKey)
-                .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, "Project not found!"));
+    public JsonResponse addSkillToProject(String userEmail, String projectKey, String skillKey) {
+
+        final Profile profile = profileRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, "User has no associated profile!"));
 
         final Skill skill = skillRepository.findBySkillKey(skillKey)
                 .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, "Skill not found!"));
 
-        if (!profileSkillRepository.findSkillByProfile(skill).isPresent())
+        if (!profileSkillRepository.existsByProfileAndSkill(profile, skill)) {
             throw new ValidationException("The skill was not found in the skills list of the user's profile",
                     "Ensure that the skill is in the skills list of the user's profile!");
+        }
+
+        final Project project = projectRepository.findByProjectKey(projectKey)
+                .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, "Project not found!"));
 
         ProjectSkill projectSkill = new ProjectSkill(project, skill);
         projectSkillRepository.save(projectSkill);
