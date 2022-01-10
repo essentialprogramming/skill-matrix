@@ -52,6 +52,11 @@ public enum AppResources {
         public String value() {
             return System.getenv().getOrDefault("APP_URL", configuration.getPropertyAsString("app.url")) + "/otp-login";
         }
+    },
+    AUTH_PORT {
+        public String value() {
+            return System.getenv().getOrDefault("AUTH_PORT", configuration.getPropertyAsString("auth.port"));
+        }
     };
     private static final com.util.cloud.Configuration configuration = ConfigurationManager.getConfiguration();
 

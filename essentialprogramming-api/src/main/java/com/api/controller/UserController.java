@@ -85,7 +85,6 @@ public class UserController {
                     @ApiResponse(responseCode = "422", description = "Email already taken!")
             })
     @RolesAllowed("ADMIN")
-    @Anonymous
     public void createUser(UserInput userInput, @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();
