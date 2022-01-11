@@ -4,6 +4,7 @@ import com.api.env.resources.AppResources;
 import com.api.model.AuthServicePublicKey;
 import com.authentication.exceptions.codes.ErrorCode;
 import com.authentication.security.KeyStoreService;
+import com.security.keystore.PublicKeyManager;
 import com.token.validation.auth.AuthUtils;
 import com.token.validation.jwt.JwtClaims;
 import com.token.validation.jwt.JwtUtil;
@@ -12,8 +13,6 @@ import com.token.validation.response.ValidationResponse;
 import com.util.cloud.Environment;
 import com.util.exceptions.ServiceException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.client.Client;
@@ -37,10 +36,12 @@ import java.util.*;
 
 public class SecurityFilter implements ContainerRequestFilter {
 
+    private final PublicKeyManager publicKeyManager;
     private final KeyStoreService keyStoreService;
     private final ResourceInfo resourceInfo;
 
-    public SecurityFilter(KeyStoreService keyStoreService, ResourceInfo resourceInfo) {
+    public SecurityFilter(PublicKeyManager publicKeyManager, KeyStoreService keyStoreService, ResourceInfo resourceInfo) {
+        this.publicKeyManager = publicKeyManager;
         this.keyStoreService = keyStoreService;
         this.resourceInfo = resourceInfo;
     }
