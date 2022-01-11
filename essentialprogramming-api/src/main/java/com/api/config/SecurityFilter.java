@@ -45,20 +45,6 @@ public class SecurityFilter implements ContainerRequestFilter {
 
         final PublicKey publicKey;
         try {
-            //TODO -> jwt = AuthUtils.extractBearerToken(authorization);
-            //            identityProvider = ... ;  --- FROM TOKEN (authorization server is the identity provider)
-            //            keyId = JwtUtil.getKeyId(jwt);
-            // SWITCH BETWEEN IDENTITY PROVIDERS:
-            //          switch (identityProvider) {
-            //            case IdentityProviders.KEYCLOAK:
-            //                return KeyCloakPublicKeyLoader.getInstance().getPublicKey(identityProvider, kid);
-            //            case IdentityProviders.SKILL_MATRIX:
-            //                return KeyStoreService.getInstance().getPublicKey();
-            //            default:
-            //                throw new ServiceException(ErrorCode.INVALID_IDP,
-            //                        "No PublicKeyLoader found for idp " + identityProvider);
-            //        }
-
             publicKey = keyStoreService.getPublicKey();
             ValidationResponse<JwtClaims> response = JwtUtil.verifyJwt(AuthUtils.extractBearerToken(authorization), publicKey);
             if (!response.isValid()) {

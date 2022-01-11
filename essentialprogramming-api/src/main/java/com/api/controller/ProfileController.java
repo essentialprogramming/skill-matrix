@@ -351,7 +351,6 @@ public class ProfileController {
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ProjectJSON.class))),
                     @ApiResponse(responseCode = "401", description = "Unauthorized."),
-                    @ApiResponse(responseCode = "404", description = "User not found!"),
                     @ApiResponse(responseCode = "500", description = "Internal server error.")
             })
     @Anonymous
