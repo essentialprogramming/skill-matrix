@@ -14,7 +14,6 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SimpleProfileInput {
 
-    private String profilePicture;
     private String firstname;
     private String lastname;
     private String email;

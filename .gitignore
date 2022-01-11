@@ -19,6 +19,7 @@ package-lock.json
 
 
 # Ignore everything in this directory
+uploaded-images/
 target/
 logs/
 node/

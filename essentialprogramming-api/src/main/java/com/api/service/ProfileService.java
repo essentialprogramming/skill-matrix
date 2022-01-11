@@ -10,20 +10,33 @@ import com.api.output.SimpleProfileJSON;
 import com.api.repository.*;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.util.exceptions.ValidationException;
+import com.util.io.FileUtils;
 import com.util.web.JsonResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ProfileService {
+
+    private static final String PATH = "uploaded-images";
 
     private final ProfileRepository profileRepository;
     private final ProjectRepository projectRepository;
@@ -32,6 +45,7 @@ public class ProfileService {
     private final SkillRepository skillRepository;
     private final CategorySkillRelationRepository categorySkillRelationRepository;
     private final ProjectSkillRepository projectSkillRepository;
+    private final ImageRepository imageRepository;
 
     @Transactional
     public ProfileJSON createProfile(String userEmail, ProfileInput profileInput) {
@@ -67,6 +81,12 @@ public class ProfileService {
                 return project;
             }).collect(Collectors.toList());
         }
+
+        Optional<Image> imageOptional = imageRepository.findByUserEmail(userEmail);
+        imageOptional.ifPresent(image -> {
+            profile.setProfilePicture(getBase64ImageFromDisk(image.getFileName()));
+            imageRepository.delete(image);
+        });
 
         profile.setProjects(projects);
         profile.setEmail(userEmail);
@@ -127,9 +147,6 @@ public class ProfileService {
         Profile existingProfile = profileRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, "Profile not found for the given user!"));
 
-        if (newProfile.getProfilePicture() != null) {
-            existingProfile.setProfilePicture(newProfile.getProfilePicture());
-        }
         if (newProfile.getFirstname() != null) {
             existingProfile.setFirstname(newProfile.getFirstname());
         }
@@ -252,5 +269,66 @@ public class ProfileService {
         projectRepository.save(existingProject);
 
         return ProjectMapper.entityToJSON(existingProject);
+    }
+
+    @Transactional
+    public JsonResponse uploadProfileImage(InputStream uploadedInputStream, FormDataContentDisposition fileDetails, String userEmail) {
+        final String fileName = NanoIdUtils.randomNanoId();
+
+        saveImageToDisk(uploadedInputStream, fileName);
+
+        Optional<Image> optionalImage = imageRepository.findByUserEmail(userEmail);
+
+        if (optionalImage.isPresent()) {
+            Image image = optionalImage.get();
+
+            final String oldFileName = image.getFileName();
+            deleteImageOnDisk(oldFileName);
+
+            image.setFileName(fileName);
+            imageRepository.save(image);
+        } else {
+            Image profileImage = Image.builder()
+                    .fileName(fileName)
+                    .userEmail(userEmail)
+                    .build();
+
+            imageRepository.save(profileImage);
+        }
+
+        return new JsonResponse()
+                .with("status", "created")
+                .with("message", "Image successfully saved!")
+                .done();
+    }
+
+    private void saveImageToDisk(InputStream fileInputStream, String fileName) {
+        final String filePath = PATH + "/" + fileName;
+
+        try {
+            Path targetFile = FileUtils.getPath(filePath, true);
+            Files.copy(fileInputStream, targetFile, StandardCopyOption.REPLACE_EXISTING);
+
+            IOUtils.closeQuietly(fileInputStream);
+        } catch (IOException e) {
+            throw new HttpClientErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Failed to save the image file.");
+        }
+    }
+
+    @SneakyThrows
+    private String getBase64ImageFromDisk(String fileName) {
+        final String filePath = PATH + "/" + fileName;
+
+        byte[] fileContent = org.apache.commons.io.FileUtils.readFileToByteArray(new File(filePath));
+        deleteImageOnDisk(fileName);
+
+        return Base64.getEncoder().encodeToString(fileContent);
+    }
+
+    @SneakyThrows
+    private void deleteImageOnDisk(String fileName) {
+        final String filePath = PATH + "/" + fileName;
+
+        Files.deleteIfExists(Paths.get(filePath));
     }
 }

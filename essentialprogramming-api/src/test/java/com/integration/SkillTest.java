@@ -202,8 +202,6 @@ public class SkillTest {
                 .assertThat()
                 .statusCode(201)
                 .and()
-                .body("profilePicture", equalTo(profileInput.getProfilePicture()))
-                .and()
                 .body("firstName", equalTo(profileInput.getFirstname()))
                 .and()
                 .body("lastName", equalTo(profileInput.getLastname()))

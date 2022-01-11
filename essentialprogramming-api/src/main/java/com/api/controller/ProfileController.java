@@ -22,9 +22,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.container.AsyncResponse;
@@ -32,6 +33,7 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -337,5 +339,37 @@ public class ProfileController {
 
     private Serializable updateProject(String userEmail, String projectKey, ProjectInput projectInput) {
         return profileService.updateProject(userEmail, projectKey, projectInput);
+    }
+
+    @POST
+    @Path("/upload/image")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Upload profile image",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Returns custom JSON response if image was successfully uploaded.",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ProjectJSON.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized."),
+                    @ApiResponse(responseCode = "404", description = "User not found!"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error.")
+            })
+    @Anonymous
+    public void uploadProfileImage(@HeaderParam("Authorization") String authorization,
+                                   @FormDataParam("file") InputStream uploadedInputStream,
+                                   @FormDataParam("file") FormDataContentDisposition fileDetails,
+                                   @Suspended AsyncResponse asyncResponse) {
+
+        final String bearer = AuthUtils.extractBearerToken(authorization);
+        final String userEmail = AuthUtils.getClaim(bearer, "email");
+
+        ExecutorService executorService = ExecutorsProvider.getExecutorService();
+        Computation.computeAsync(() -> uploadProfileImage(uploadedInputStream, fileDetails, userEmail), executorService)
+                .thenApplyAsync(json -> asyncResponse.resume(Response.status(201).entity(json).build()), executorService)
+                .exceptionally(error -> asyncResponse.resume(ExceptionHandler.handleException((CompletionException)  error)));
+    }
+
+    private Serializable uploadProfileImage(InputStream uploadedInputStream, FormDataContentDisposition fileDetails, String userEmail) {
+        return profileService.uploadProfileImage(uploadedInputStream, fileDetails, userEmail);
     }
 }
