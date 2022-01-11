@@ -14,7 +14,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AuthServicePublicKey implements Serializable {
+public class JWK implements Serializable {
 
         @JsonProperty("kid")
         private String keyId;

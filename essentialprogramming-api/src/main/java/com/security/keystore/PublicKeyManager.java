@@ -4,7 +4,9 @@ import com.authentication.exceptions.codes.ErrorCode;
 import com.authentication.security.KeyStoreService;
 import com.util.exceptions.ServiceException;
 
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 
 public class PublicKeyManager {
     private static class PublicKeyManagerHolder {
@@ -24,12 +26,12 @@ public class PublicKeyManager {
                 return KeyStoreService.getInstance().getPublicKey();
             default:
                 throw new ServiceException(ErrorCode.IDENTITY_PROVIDER_UNRECOGNIZED,
-                        "No PublicKeyLoader found for idp " + identityProvider);
+                        "No PublicKeyLoader found for identityProvider " + identityProvider);
         }
     };
 
 
-    public PublicKey getIdentityProviderPublicKey(String identityProvider, String kid) {
+    public PublicKey getIdentityProviderPublicKey(String identityProvider, String kid) throws NoSuchAlgorithmException, InvalidKeySpecException {
         return publicKeyLoader.getPublicKey(identityProvider, kid);
     }
 }

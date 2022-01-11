@@ -6,6 +6,7 @@ import com.api.output.UserJSON;
 import com.api.service.UserService;
 import com.exception.ExceptionHandler;
 import com.internationalization.Messages;
+import com.security.AllowUserIf;
 import com.token.validation.auth.AuthUtils;
 import com.util.async.Computation;
 import com.util.async.ExecutorsProvider;
@@ -84,7 +85,8 @@ public class UserController {
                                     schema = @Schema(implementation = UserJSON.class))),
                     @ApiResponse(responseCode = "422", description = "Email already taken!")
             })
-    @RolesAllowed("ADMIN")
+//    @RolesAllowed("ADMIN")
+    @AllowUserIf("hasAuthority('PERMISSION_add:account')")
     public void createUser(UserInput userInput, @Suspended AsyncResponse asyncResponse) {
 
         ExecutorService executorService = ExecutorsProvider.getExecutorService();

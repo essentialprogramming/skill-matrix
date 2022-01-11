@@ -1,7 +1,14 @@
 package com.security.keystore;
 
-import com.api.model.AuthServicePublicKey;
+import com.api.env.resources.AppResources;
+import com.api.model.JWK;
+import com.util.cloud.Environment;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -25,15 +32,35 @@ public class AuthServerPublicKeyLoader{
         return AuthServerPublicKeyHolder.INSTANCE;
     }
 
-    public PublicKey getPublicKey(String kid) {
-        if (kid != null && cache.containsKey(kid)){
+    public PublicKey getPublicKey(String kid) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        if (kid != null && cache.containsKey(kid)) {
             return cache.get(kid);
         }
-        return null;
+
+        return mapJWKtoPublicKey(getAuthServerJWK());
+    }
+
+    private JWK getAuthServerJWK() {
+        //call endpoint from auth-server to get JWK;
+        Client client = ClientBuilder.newClient();
+
+        final String url = Environment.getProperty("appip", "localhost");
+        final String port = AppResources.AUTH_PORT.value();
+
+        WebTarget webTarget = client.target("http://" + url + ":" + port + "/api");
+
+        WebTarget publicKeyWebTarget = webTarget.path("/auth/publicKey");
+
+        Invocation.Builder invocationBuilder = publicKeyWebTarget.request(MediaType.APPLICATION_JSON)
+                .header("Accept-Language", "en-US");
+
+        JWK jwk = invocationBuilder.get(JWK.class);
+
+        return jwk;
     }
 
 
-    private PublicKey getPublicKey(AuthServicePublicKey key)
+    private PublicKey mapJWKtoPublicKey (JWK key)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
 
         KeyFactory keyFactory = KeyFactory.getInstance(key.getKeyType());
@@ -41,4 +68,5 @@ public class AuthServerPublicKeyLoader{
         BigInteger publicExponent = new BigInteger(1, Base64.getUrlDecoder().decode(key.getExponent()));
         return keyFactory.generatePublic(new RSAPublicKeySpec(modulus, publicExponent));
     }
+
 }
