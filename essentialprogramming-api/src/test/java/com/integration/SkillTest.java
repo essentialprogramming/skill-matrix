@@ -9,14 +9,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.util.TestEntityGenerator;
 import io.restassured.RestAssured;
-import io.restassured.config.EncoderConfig;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +35,7 @@ public class SkillTest {
 
     @BeforeAll
     public static void setup() {
-        RestAssured.baseURI = "http://localhost:8080";
+        RestAssured.baseURI = "http://localhost:8082";
         ObjectMapper objectMapper = new ObjectMapper();
 
         ObjectNode userDetails = objectMapper.createObjectNode();
@@ -93,7 +91,7 @@ public class SkillTest {
                     .header("Accept-Language", "en-US")
                     .queryParam("name", categoryName)
                     .when()
-                    .post("/skill/add-category")
+                    .post("/skill/category")
                     .then()
                     .assertThat()
                     .statusCode(201)
@@ -117,10 +115,10 @@ public class SkillTest {
                         .contentType(ContentType.JSON)
                         .header("Authorization", adminAccessToken)
                         .header("Accept-Language", "en-US")
-                        .queryParam("skillName", skillName)
-                        .queryParam("skillCategoryKey", categoryKey)
+                        .queryParam("skill-name", skillName)
+                        .queryParam("skill-category-key", categoryKey)
                         .when()
-                        .post("/skill/add")
+                        .post("/skill")
                         .then()
                         .assertThat()
                         .statusCode(201)
@@ -150,7 +148,7 @@ public class SkillTest {
                 .header("Accept-Language", "en")
                 .body(userInput)
                 .when()
-                .post("/security/employee/create")
+                .post("/security/employee")
                 .then()
                 .assertThat()
                 .statusCode(201)
@@ -239,10 +237,10 @@ public class SkillTest {
                         .header("Authorization", finalUserToken)
                         .header("Accept-Language", "en")
                         //add skills
-                        .queryParam("skillKey", skillKey)
-                        .queryParam("skillLevel", "BEGINNER")
+                        .queryParam("skill-key", skillKey)
+                        .queryParam("skill-level", "BEGINNER")
                         .when()
-                        .post("/profile/add/skill")
+                        .post("/profile/skill")
                         .then()
                         .assertThat()
                         .statusCode(200)
@@ -281,7 +279,7 @@ public class SkillTest {
                 .header("Accept-Language", "en")
                 .body(projectInput)
                 .when()
-                .post("/profile/add/project")
+                .post("/profile/project")
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -300,10 +298,10 @@ public class SkillTest {
                     .contentType(ContentType.JSON)
                     .header("Authorization", userToken)
                     .header("Accept-Language", "en")
-                    .queryParam("Project Key", projectKey)
-                    .queryParam("Skill Key", skillNameAndKeys.get(skillNames.get(i)))
+                    .queryParam("project-key", projectKey)
+                    .queryParam("skill-key", skillNameAndKeys.get(skillNames.get(i)))
                     .when()
-                    .post("/profile/add/project/skill")
+                    .post("/profile/project/skill")
                     .then()
                     .assertThat()
                     .statusCode(200)
@@ -319,10 +317,10 @@ public class SkillTest {
                 .contentType(ContentType.JSON)
                 .header("Authorization", userToken)
                 .header("Accept-Language", "en")
-                .queryParam("Project Key", projectKey)
-                .queryParam("Skill Key", skillKeyRemoved)
+                .queryParam("project-key", projectKey)
+                .queryParam("skill-key", skillKeyRemoved)
                 .when()
-                .post("/profile/add/project/skill")
+                .post("/profile/project/skill")
                 .then()
                 .assertThat()
                 .statusCode(422)

@@ -37,7 +37,7 @@ public class AuthServerPublicKeyLoader{
             return cache.get(kid);
         }
 
-        return mapJWKtoPublicKey(getAuthServerJWK());
+        return convertJWKtoPublicKey(getAuthServerJWK());
     }
 
     private JWK getAuthServerJWK() {
@@ -49,7 +49,7 @@ public class AuthServerPublicKeyLoader{
 
         WebTarget webTarget = client.target("http://" + url + ":" + port + "/api");
 
-        WebTarget publicKeyWebTarget = webTarget.path("/auth/publicKey");
+        WebTarget publicKeyWebTarget = webTarget.path("/auth/oauth2/jwks");
 
         Invocation.Builder invocationBuilder = publicKeyWebTarget.request(MediaType.APPLICATION_JSON)
                 .header("Accept-Language", "en-US");
@@ -60,7 +60,7 @@ public class AuthServerPublicKeyLoader{
     }
 
 
-    private PublicKey mapJWKtoPublicKey (JWK key)
+    private PublicKey convertJWKtoPublicKey(JWK key)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
 
         KeyFactory keyFactory = KeyFactory.getInstance(key.getKeyType());
