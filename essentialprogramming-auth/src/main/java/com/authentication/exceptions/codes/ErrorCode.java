@@ -23,8 +23,10 @@ public enum ErrorCode implements ErrorCodes.ErrorCode {
 
     PASSWORD_HASH_CREATION_NOT_SUCCESSFUL(40, "Password Hash creation not successful"),
     REFRESH_TOKEN_NOT_ALLOWED(50, "Implicit flow must not issue a refresh token"),
-    UNABLE_TO_AUTHENTICATE(60, "Authentication failed");
+    UNABLE_TO_AUTHENTICATE(60, "Authentication failed"),
 
+    IDENTITY_PROVIDER_UNRECOGNIZED(80, "Identity provider unrecognized"),
+    UNABLE_TO_GET_KEY_ID_FROM_TOKEN(70, "Key id must be provided in token header");
 
 
 

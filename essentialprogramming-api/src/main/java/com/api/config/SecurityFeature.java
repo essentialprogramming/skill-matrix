@@ -1,6 +1,7 @@
 package com.api.config;
 
 import com.authentication.security.KeyStoreService;
+import com.security.keystore.PublicKeyManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.Priorities;
@@ -25,7 +26,7 @@ public class SecurityFeature implements DynamicFeature {
             return;
         }
 
-        context.register(new SecurityFilter(keyStoreService, resourceInfo), Priorities.AUTHENTICATION);
+        context.register(new SecurityFilter(PublicKeyManager.getInstance(), keyStoreService, resourceInfo), Priorities.AUTHENTICATION);
 
     }
 }

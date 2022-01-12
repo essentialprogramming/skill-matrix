@@ -76,6 +76,7 @@ public class AuthenticationService {
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expirationTime = now.plus(1, ChronoUnit.DAYS);
+        //identityProvider
 
         return getAccessToken(now, expirationTime, privateClaimMap, account.getId(), account.isActive(), account.getEmail());
     }
@@ -93,6 +94,8 @@ public class AuthenticationService {
         }
 
         privateClaimMap.put(PrivateClaims.ACTIVE.getType(), String.valueOf(active));
+
+        privateClaimMap.put(PrivateClaims.IDENTITY_PROVIDER.getType(), "skill-matrix");
 
         return privateClaimMap;
     }
