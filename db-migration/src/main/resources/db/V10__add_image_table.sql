@@ -1,0 +1,16 @@
+-- Create table for Image entity
+
+DROP PROCEDURE IF EXISTS CREATE_IMAGE_TABLE;
+CREATE PROCEDURE CREATE_IMAGE_TABLE()
+    language plpgsql
+as $$
+BEGIN
+    DROP TABLE IF EXISTS image;
+
+    CREATE TABLE image (
+        user_email varchar(100) PRIMARY KEY UNIQUE NOT NULL,
+        file_name varchar(100) UNIQUE NOT NULL
+    );
+END $$;
+CALL CREATE_IMAGE_TABLE();
+DROP PROCEDURE CREATE_IMAGE_TABLE;

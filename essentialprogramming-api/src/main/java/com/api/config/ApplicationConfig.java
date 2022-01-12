@@ -77,6 +77,7 @@ public class ApplicationConfig extends ResourceConfig {
                         .description("JWT Authorization header using the Bearer scheme. Example: \\\\\\\"Authorization: Bearer {token}\\\\\\\"")
                         .type(SecurityScheme.Type.APIKEY)
                         .in(SecurityScheme.In.HEADER)
+
                 )
                 .security(Collections.singletonList(new SecurityRequirement().addList("Bearer")));
 

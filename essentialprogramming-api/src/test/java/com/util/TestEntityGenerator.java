@@ -20,7 +20,6 @@ public class TestEntityGenerator {
 
     public static ProfileInput generateProfileInput(Role role) {
         return ProfileInput.builder()
-                .profilePicture("Picture" + secureRandom.nextInt())
                 .firstname("Name" + secureRandom.nextInt())
                 .lastname("lastName" + secureRandom.nextInt())
                 .phone("0789456123")
