@@ -10,20 +10,31 @@ import com.api.output.SimpleProfileJSON;
 import com.api.repository.*;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.util.exceptions.ValidationException;
+import com.util.io.FileInputResource;
+import com.util.io.FileUtils;
 import com.util.web.JsonResponse;
 import lombok.RequiredArgsConstructor;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ProfileService {
+
+    private static final String PATH = "uploaded-images";
 
     private final ProfileRepository profileRepository;
     private final ProjectRepository projectRepository;
@@ -32,6 +43,7 @@ public class ProfileService {
     private final SkillRepository skillRepository;
     private final CategorySkillRelationRepository categorySkillRelationRepository;
     private final ProjectSkillRepository projectSkillRepository;
+    private final ImageRepository imageRepository;
 
     @Transactional
     public ProfileJSON createProfile(String userEmail, ProfileInput profileInput) {
@@ -67,6 +79,16 @@ public class ProfileService {
                 return project;
             }).collect(Collectors.toList());
         }
+
+        Optional<Image> imageOptional = imageRepository.findByUserEmail(userEmail);
+        imageOptional.ifPresent(image -> {
+            try {
+                profile.setProfilePicture(getBase64ImageFromDisk(image.getFileName()));
+            } catch (IOException e) {
+                System.out.println("Failed to load profile picture.");
+            }
+            imageRepository.delete(image);
+        });
 
         profile.setProjects(projects);
         profile.setEmail(userEmail);
@@ -127,9 +149,6 @@ public class ProfileService {
         Profile existingProfile = profileRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, "Profile not found for the given user!"));
 
-        if (newProfile.getProfilePicture() != null) {
-            existingProfile.setProfilePicture(newProfile.getProfilePicture());
-        }
         if (newProfile.getFirstname() != null) {
             existingProfile.setFirstname(newProfile.getFirstname());
         }
@@ -252,5 +271,71 @@ public class ProfileService {
         projectRepository.save(existingProject);
 
         return ProjectMapper.entityToJSON(existingProject);
+    }
+
+    @Transactional
+    public JsonResponse uploadProfileImage(InputStream uploadedInputStream, FormDataContentDisposition fileDetails, String userEmail) {
+        final String fileName = NanoIdUtils.randomNanoId();
+
+        saveImageToDisk(uploadedInputStream, fileName);
+
+        Optional<Image> optionalImage = imageRepository.findByUserEmail(userEmail);
+
+        if (optionalImage.isPresent()) {
+            Image image = optionalImage.get();
+
+            final String oldFileName = image.getFileName();
+
+            try {
+                deleteImageOnDisk(oldFileName);
+            } catch (IOException e) {
+                System.out.println("Warning: Failed to delete old image file!");
+            }
+
+            image.setFileName(fileName);
+            imageRepository.save(image);
+        } else {
+            Image profileImage = Image.builder()
+                    .fileName(fileName)
+                    .userEmail(userEmail)
+                    .build();
+
+            imageRepository.save(profileImage);
+        }
+
+        return new JsonResponse()
+                .with("status", "created")
+                .with("message", "Image successfully saved!")
+                .done();
+    }
+
+    private void saveImageToDisk(InputStream fileInputStream, String fileName) {
+        final String filePath = PATH + "/" + fileName;
+
+        try {
+            Path targetFile = FileUtils.getPath(filePath, true);
+            Files.copy(fileInputStream, targetFile, StandardCopyOption.REPLACE_EXISTING);
+
+        } catch (IOException e) {
+            throw new HttpClientErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Failed to save the image file.");
+        } finally {
+            FileUtils.closeQuietly(fileInputStream);
+        }
+    }
+
+    private String getBase64ImageFromDisk(String fileName) throws IOException {
+        final String filePath = PATH + "/" + fileName;
+
+        byte[] fileContent = new FileInputResource(filePath).getBytes();
+
+        deleteImageOnDisk(fileName);
+
+        return Base64.getEncoder().encodeToString(fileContent);
+    }
+
+    private void deleteImageOnDisk(String fileName) throws IOException {
+        final String filePath = PATH + "/" + fileName;
+
+        Files.deleteIfExists(Paths.get(filePath));
     }
 }

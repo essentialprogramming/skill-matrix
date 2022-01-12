@@ -13,7 +13,6 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProfileInput {
 
-    private String profilePicture;
     private String firstname;
     private String lastname;
     private String phone;

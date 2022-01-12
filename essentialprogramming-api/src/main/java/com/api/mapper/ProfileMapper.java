@@ -14,7 +14,6 @@ public class ProfileMapper {
     public static Profile inputToProfile(ProfileInput profileInput) {
 
         return Profile.builder()
-                .profilePicture(profileInput.getProfilePicture())
                 .firstname(profileInput.getFirstname())
                 .lastname(profileInput.getLastname())
                 .phone(profileInput.getPhone())

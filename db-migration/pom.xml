@@ -39,7 +39,7 @@
                     <user>postgres</user>
                     <!-- Password for local database -->
 <!--                    <password>postgres</password>-->
-<!--                    <password>essentialprogramming</password>-->
+                    <password>essentialprogramming</password>
                     <schemas>
                         <schema>public</schema>
                     </schemas>
