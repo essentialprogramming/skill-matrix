@@ -2,7 +2,11 @@ package com.security.keystore;
 
 import com.api.env.resources.AppResources;
 import com.api.model.JWK;
+import com.authentication.exceptions.codes.ErrorCode;
 import com.util.cloud.Environment;
+import com.util.exceptions.ServiceException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -18,7 +22,7 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class AuthServerPublicKeyLoader{
+public class AuthServerPublicKeyLoader {
     private final ConcurrentHashMap<String, PublicKey> cache = new ConcurrentHashMap<>();
 
     private AuthServerPublicKeyLoader() {
@@ -33,14 +37,17 @@ public class AuthServerPublicKeyLoader{
     }
 
     public PublicKey getPublicKey(String kid) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        if (kid != null && cache.containsKey(kid)) {
-            return cache.get(kid);
-        }
+        if (kid != null) {
+            if (cache.containsKey(kid)) {
+                return cache.get(kid);
+            }
 
-        JWK jwk = getAuthServerJWK();
-        PublicKey publicKey = getPublicKey(jwk);
-        cache.put(jwk.getKeyId(), publicKey);
-        return publicKey;
+            JWK jwk = getAuthServerJWK();
+            PublicKey publicKey = getPublicKey(jwk);
+            cache.put(kid, publicKey);
+            return publicKey;
+        }
+        throw new ServiceException(ErrorCode.UNABLE_TO_GET_KEY_ID_FROM_TOKEN);
     }
 
     private JWK getAuthServerJWK() {

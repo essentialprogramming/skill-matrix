@@ -25,8 +25,7 @@ public class PublicKeyManager {
             case "skill-matrix":
                 return KeyStoreService.getInstance().getPublicKey();
             default:
-                throw new ServiceException(ErrorCode.IDENTITY_PROVIDER_UNRECOGNIZED,
-                        "No PublicKeyLoader found for identityProvider " + identityProvider);
+                throw new ServiceException(ErrorCode.IDENTITY_PROVIDER_UNRECOGNIZED);
         }
     };
 
