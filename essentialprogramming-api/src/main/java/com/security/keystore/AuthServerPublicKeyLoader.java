@@ -37,7 +37,10 @@ public class AuthServerPublicKeyLoader{
             return cache.get(kid);
         }
 
-        return convertJWKtoPublicKey(getAuthServerJWK());
+        JWK jwk = getAuthServerJWK();
+        PublicKey publicKey = getPublicKey(jwk);
+        cache.put(jwk.getKeyId(), publicKey);
+        return publicKey;
     }
 
     private JWK getAuthServerJWK() {
@@ -60,7 +63,7 @@ public class AuthServerPublicKeyLoader{
     }
 
 
-    private PublicKey convertJWKtoPublicKey(JWK key)
+    private PublicKey getPublicKey(JWK key)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
 
         KeyFactory keyFactory = KeyFactory.getInstance(key.getKeyType());
