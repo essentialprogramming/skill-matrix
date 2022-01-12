@@ -5,10 +5,7 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.ArrayList;
@@ -132,5 +129,18 @@ public class FileUtils {
             return pathStr;
         }
         return new File(pathStr).getParentFile().getAbsolutePath();
+    }
+
+    /**
+    * Manually close a Closeable
+     */
+    public static void closeQuietly(final Closeable closeable) {
+        try {
+            if (closeable != null) {
+                closeable.close();
+            }
+        } catch (final IOException ioe) {
+            //ignore
+        }
     }
 }

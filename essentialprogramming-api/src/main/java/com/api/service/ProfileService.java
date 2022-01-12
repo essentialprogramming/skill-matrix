@@ -10,11 +10,10 @@ import com.api.output.SimpleProfileJSON;
 import com.api.repository.*;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.util.exceptions.ValidationException;
+import com.util.io.FileInputResource;
 import com.util.io.FileUtils;
 import com.util.web.JsonResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -84,7 +82,11 @@ public class ProfileService {
 
         Optional<Image> imageOptional = imageRepository.findByUserEmail(userEmail);
         imageOptional.ifPresent(image -> {
-            profile.setProfilePicture(getBase64ImageFromDisk(image.getFileName()));
+            try {
+                profile.setProfilePicture(getBase64ImageFromDisk(image.getFileName()));
+            } catch (IOException e) {
+                System.out.println("Failed to load profile picture.");
+            }
             imageRepository.delete(image);
         });
 
@@ -283,7 +285,12 @@ public class ProfileService {
             Image image = optionalImage.get();
 
             final String oldFileName = image.getFileName();
-            deleteImageOnDisk(oldFileName);
+
+            try {
+                deleteImageOnDisk(oldFileName);
+            } catch (IOException e) {
+                System.out.println("Warning: Failed to delete old image file!");
+            }
 
             image.setFileName(fileName);
             imageRepository.save(image);
@@ -309,24 +316,24 @@ public class ProfileService {
             Path targetFile = FileUtils.getPath(filePath, true);
             Files.copy(fileInputStream, targetFile, StandardCopyOption.REPLACE_EXISTING);
 
-            IOUtils.closeQuietly(fileInputStream);
         } catch (IOException e) {
             throw new HttpClientErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Failed to save the image file.");
+        } finally {
+            FileUtils.closeQuietly(fileInputStream);
         }
     }
 
-    @SneakyThrows
-    private String getBase64ImageFromDisk(String fileName) {
+    private String getBase64ImageFromDisk(String fileName) throws IOException {
         final String filePath = PATH + "/" + fileName;
 
-        byte[] fileContent = org.apache.commons.io.FileUtils.readFileToByteArray(new File(filePath));
+        byte[] fileContent = new FileInputResource(filePath).getBytes();
+
         deleteImageOnDisk(fileName);
 
         return Base64.getEncoder().encodeToString(fileContent);
     }
 
-    @SneakyThrows
-    private void deleteImageOnDisk(String fileName) {
+    private void deleteImageOnDisk(String fileName) throws IOException {
         final String filePath = PATH + "/" + fileName;
 
         Files.deleteIfExists(Paths.get(filePath));
